@@ -11,6 +11,8 @@ from rest_framework import views
 from rest_framework import status
 from rest_framework.response import Response
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import svm
+import json
 
 
 class Train(views.APIView):
@@ -36,17 +38,21 @@ class Train(views.APIView):
 
 class Predict(views.APIView):
     def post(self, request):
-        predictions = []
-        for entry in request.data:
-            model_name = "model"
-            path = os.path.join(settings.MODEL_ROOT, model_name)
-            with open(path, 'rb') as file:
-                model = pickle.load(file)
-            try:
-                result = model.predict(pd.DataFrame([entry]))
-                predictions.append(result[0])
+        result = 0
+        #requettePD = pd.read_json(json.loads(request.data['json']))
+        self.request.POST._mutable = True
 
-            except Exception as err:
-                return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+        #r = json.loads(request.data.pop('demande')[0])
+        rpd = pd.read_json(request.data.pop('demande')[0])
 
-        return Response(predictions, status=status.HTTP_200_OK)
+        model_name = "model"
+        path = os.path.join(settings.MODEL_ROOT, model_name)
+        with open(path, 'rb') as file:
+            model = pickle.load(file)
+        try:
+            result = model.predict(rpd)
+
+        except Exception as err:
+            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
