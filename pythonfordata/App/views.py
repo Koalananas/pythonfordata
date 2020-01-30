@@ -38,7 +38,7 @@ class Predict(views.APIView):
     def post(self, request):
         predictions = []
         for entry in request.data:
-            model_name = entry.pop('model_name')
+            model_name = "model"
             path = os.path.join(settings.MODEL_ROOT, model_name)
             with open(path, 'rb') as file:
                 model = pickle.load(file)
